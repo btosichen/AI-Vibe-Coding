@@ -1,1 +1,1 @@
-# AI-Picture-Book-Tips
+# AI-Vibe-Coding
