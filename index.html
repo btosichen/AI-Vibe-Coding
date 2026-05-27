@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用 AI 一步步打造貪食蛇遊戲！</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans TC', 'sans-serif'],
+            display: ['Fredoka', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            brandBlue: '#3B82F6',   /* 藍色 */
+            brandGreen: '#10B981',  /* 綠色 */
+            brandYellow: '#FBBF24', /* 黃色 */
+            brandOrange: '#F97316', /* 橘色 */
+            brandPurple: '#8B5CF6', /* 紫色 */
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F8FAFC;
+    }
+    .custom-shadow {
+      box-shadow: 0 8px 30px rgb(0 0 0 / 0.04);
+    }
+    .card-transition {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hero-bg {
+      background: radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 90%);
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-800 antialiased min-h-screen">
+
+  <!-- 頂部導覽列 -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 py-3 px-6 shadow-sm">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-brandBlue text-white rounded-xl flex items-center justify-center font-display text-xl font-bold shadow-md shadow-blue-200">
+          🐍
+        </div>
+        <div>
+          <span class="font-display font-black text-lg tracking-tight text-brandBlue">Vibe Coding</span>
+          <span class="text-xs block text-slate-400 font-bold -mt-1">新手自學互動教材</span>
+        </div>
+      </div>
+      <nav class="hidden md:flex gap-6 text-sm font-bold text-slate-600">
+        <a href="#steps-section" class="hover:text-brandBlue transition-colors">三步驟學習</a>
+        <a href="#vibe-section" class="hover:text-brandPurple transition-colors">什麼是 Vibe?</a>
+        <a href="#suggest-section" class="hover:text-brandOrange transition-colors">各科群主題</a>
+        <a href="#debug-section" class="hover:text-brandGreen transition-colors">卡關自救</a>
+        <a href="#checklist-section" class="hover:text-brandBlue transition-colors">學習檢核</a>
+      </nav>
+      <div>
+        <a href="#steps-section" class="bg-slate-900 text-white text-xs px-4 py-2 rounded-full font-bold hover:bg-brandBlue transition-colors shadow-sm">開始挑戰 🚀</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 首頁設計 Hero Area (適合 16:9 投影) -->
+  <section class="hero-bg py-12 px-6 border-b border-slate-100 flex items-center justify-center">
+    <div class="max-w-5xl w-full text-center">
+      <div class="inline-flex items-center gap-2 bg-blue-50 text-brandBlue text-xs font-bold px-4 py-1.5 rounded-full mb-6 border border-blue-100 shadow-sm animate-pulse">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> 普高/技高非資訊科學生也能輕鬆上手！
+      </div>
+      
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight mb-6">
+        用 AI 一步步打造<span class="text-transparent bg-clip-text bg-gradient-to-r from-brandBlue via-brandPurple to-brandOrange">貪食蛇遊戲</span>！
+      </h1>
+      
+      <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto font-medium mb-10 leading-relaxed">
+        💡 不是叫 AI 幫你寫完，而是<span class="underline decoration-brandYellow decoration-4 font-bold text-slate-800">和 AI 一起</span>把程式邏輯學起來。
+      </p>
+
+      <!-- 首頁三大按鈕 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <!-- 基礎版 -->
+        <a href="#step-1" onclick="openStep('step-1-content')" class="group p-6 bg-white rounded-2xl border-2 border-brandGreen/20 hover:border-brandGreen bg-gradient-to-br hover:from-green-50/50 hover:to-white text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-12 h-12 bg-emerald-100 text-brandGreen rounded-xl flex items-center justify-center text-2xl font-bold mb-4 shadow-sm group-hover:scale-110 transition-transform">
+            🟢
+          </div>
+          <h3 class="text-xl font-extrabold text-slate-900 mb-2">1. 基礎版</h3>
+          <p class="text-sm text-slate-500 mb-4 font-medium">做出會玩的貪食蛇遊戲，了解最核心的網頁邏輯！</p>
+          <span class="text-xs font-bold text-brandGreen inline-flex items-center gap-1">
+            展開挑戰 <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+          </span>
+        </a>
+
+        <!-- 進階版 -->
+        <a href="#step-2" onclick="openStep('step-2-content')" class="group p-6 bg-white rounded-2xl border-2 border-brandYellow/20 hover:border-brandYellow bg-gradient-to-br hover:from-amber-50/50 hover:to-white text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-12 h-12 bg-amber-100 text-brandYellow rounded-xl flex items-center justify-center text-2xl font-bold mb-4 shadow-sm group-hover:scale-110 transition-transform">
+            🟡
+          </div>
+          <h3 class="text-xl font-extrabold text-slate-900 mb-2">2. 進階版</h3>
+          <p class="text-sm text-slate-500 mb-4 font-medium">加入速度變化、生命值與關卡，讓遊戲更有挑戰性！</p>
+          <span class="text-xs font-bold text-amber-500 inline-flex items-center gap-1">
+            展開挑戰 <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+          </span>
+        </a>
+
+        <!-- 高階版 -->
+        <a href="#step-3" onclick="openStep('step-3-content')" class="group p-6 bg-white rounded-2xl border-2 border-brandPurple/20 hover:border-brandPurple bg-gradient-to-br hover:from-purple-50/50 hover:to-white text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-12 h-12 bg-purple-100 text-brandPurple rounded-xl flex items-center justify-center text-2xl font-bold mb-4 shadow-sm group-hover:scale-110 transition-transform">
+            🔴
+          </div>
+          <h3 class="text-xl font-extrabold text-slate-900 mb-2">3. 高階版</h3>
+          <p class="text-sm text-slate-500 mb-4 font-medium">融入不同群科的主題與手機觸控，打造專屬代表作！</p>
+          <span class="text-xs font-bold text-brandPurple inline-flex items-center gap-1">
+            展開挑戰 <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 三步驟互動學習區 -->
+  <main id="steps-section" class="py-16 px-4 md:px-6 max-w-5xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="text-brandBlue font-extrabold tracking-widest text-sm uppercase">Interactive Guide</span>
+      <h2 class="text-3xl font-black text-slate-900 mt-2">三步驟 AI 協作學習區</h2>
+      <p class="text-slate-500 mt-2">點擊下方卡片即可展開，複製神奇 Prompt，和 AI 展開對話吧！</p>
+    </div>
+
+    <div class="space-y-6">
+
+      <!-- Step 1 🟢 -->
+      <div id="step-1" class="bg-white rounded-3xl border-2 border-emerald-100 shadow-sm overflow-hidden card-transition">
+        <!-- 卡片標題（可點擊展開） -->
+        <button onclick="toggleStep('step-1-content')" class="w-full text-left p-6 md:p-8 flex items-center justify-between hover:bg-emerald-50/20 transition-colors focus:outline-none">
+          <div class="flex items-start md:items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-brandGreen flex items-center justify-center font-display font-extrabold text-xl shrink-0">
+              01
+            </div>
+            <div>
+              <span class="text-brandGreen text-xs font-extrabold tracking-wider uppercase">Step 1 ｜ 基礎版</span>
+              <h3 class="text-xl md:text-2xl font-black text-slate-900 mt-0.5">做出會玩的貪食蛇</h3>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="hidden sm:inline-block text-xs bg-emerald-50 text-brandGreen px-3 py-1 rounded-full font-bold">了解核心元素</span>
+            <i id="step-1-content-icon" class="fa-solid fa-chevron-down text-slate-400 text-lg transition-transform duration-300"></i>
+          </div>
+        </button>
+
+        <!-- 卡片內容 -->
+        <div id="step-1-content" class="hidden border-t border-slate-100 p-6 md:p-8 bg-slate-50/50">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <!-- 學習目標 & 學生要做到的事 -->
+            <div class="md:col-span-5 space-y-4">
+              <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5">
+                <h4 class="text-sm font-extrabold text-brandGreen uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <i class="fa-solid fa-bullseye"></i> 學習目標
+                </h4>
+                <p class="text-slate-700 text-sm leading-relaxed font-medium">
+                  了解一個基本遊戲需要哪些元素（遊戲循環、鍵盤監聽、分數顯示、重置機制）。
+                </p>
+              </div>
+
+              <div class="bg-white border border-slate-200 rounded-2xl p-5">
+                <h4 class="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                  <i class="fa-solid fa-square-check text-brandGreen"></i> 你的任務清單：
+                </h4>
+                <ul class="space-y-2 text-sm text-slate-600 font-medium pl-1">
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandGreen"></i> 有開始按鈕</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandGreen"></i> 有重新開始按鈕</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandGreen"></i> 畫面要顯示分數</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandGreen"></i> 有簡單玩法說明</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandGreen"></i> 可以用方向鍵控制</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Prompt 複製區 -->
+            <div class="md:col-span-7 flex flex-col">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                  <i class="fa-solid fa-terminal text-brandGreen"></i> 第一輪對話 Prompt 提示詞：
+                </span>
+                <button onclick="copyPrompt('prompt-1', this)" class="text-xs bg-brandGreen text-white px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-600 transition-colors flex items-center gap-1 shadow-sm shadow-emerald-100">
+                  <i class="fa-regular fa-copy"></i> <span>複製 Prompt</span>
+                </button>
+              </div>
+              <div class="relative flex-grow">
+                <textarea id="prompt-1" readonly class="w-full h-64 p-4 bg-slate-900 text-slate-200 font-mono text-sm rounded-2xl border border-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-brandGreen">我是高中生，剛開始學 HTML、CSS、JavaScript。
+請幫我設計一款簡單的「貪食蛇」網頁小遊戲。
+
+請符合以下條件：
+1. 所有程式碼整合成一個 HTML 檔案
+2. 可以用鍵盤方向鍵控制
+3. 要有開始按鈕、重新開始按鈕
+4. 要顯示分數
+5. 要有簡單玩法說明
+6. 程式碼中請加入中文註解，讓我看得懂每一段在做什麼
+7. 不要使用太複雜的語法</textarea>
+                <div class="absolute bottom-3 right-3 text-[10px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded">
+                  唯讀，按上方複製
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 🟡 -->
+      <div id="step-2" class="bg-white rounded-3xl border-2 border-amber-100 shadow-sm overflow-hidden card-transition">
+        <!-- 卡片標題 -->
+        <button onclick="toggleStep('step-2-content')" class="w-full text-left p-6 md:p-8 flex items-center justify-between hover:bg-amber-50/20 transition-colors focus:outline-none">
+          <div class="flex items-start md:items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-brandYellow flex items-center justify-center font-display font-extrabold text-xl shrink-0">
+              02
+            </div>
+            <div>
+              <span class="text-brandYellow text-xs font-extrabold tracking-wider uppercase">Step 2 ｜ 進階版</span>
+              <h3 class="text-xl md:text-2xl font-black text-slate-900 mt-0.5">讓遊戲變得更有挑戰</h3>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="hidden sm:inline-block text-xs bg-amber-50 text-amber-600 px-3 py-1 rounded-full font-bold font-sans">學會多輪修改</span>
+            <i id="step-2-content-icon" class="fa-solid fa-chevron-down text-slate-400 text-lg transition-transform duration-300"></i>
+          </div>
+        </button>
+
+        <!-- 卡片內容 -->
+        <div id="step-2-content" class="hidden border-t border-slate-100 p-6 md:p-8 bg-slate-50/50">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <!-- 學習目標 & 學生要做到的事 -->
+            <div class="md:col-span-5 space-y-4">
+              <div class="bg-amber-50/50 border border-amber-100 rounded-2xl p-5">
+                <h4 class="text-sm font-extrabold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <i class="fa-solid fa-comments"></i> 學習目標
+                </h4>
+                <p class="text-slate-700 text-sm leading-relaxed font-medium">
+                  學會用「多輪對話」請 AI 修改與疊加功能，而不是每次都請 AI 重寫。
+                </p>
+              </div>
+
+              <div class="bg-white border border-slate-200 rounded-2xl p-5">
+                <h4 class="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                  <i class="fa-solid fa-square-check text-brandYellow"></i> 你的任務清單：
+                </h4>
+                <ul class="space-y-2 text-sm text-slate-600 font-medium pl-1">
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandYellow"></i> 變速系統：分數越高，速度越快</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandYellow"></i> 加入生命值：有 3 次失誤機會</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandYellow"></i> 顯示關卡或等級</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandYellow"></i> (選做) 加入隨機障礙物</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Prompt 複製區 -->
+            <div class="md:col-span-7 flex flex-col">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                  <i class="fa-solid fa-terminal text-brandYellow"></i> 第二輪對話 Prompt 提示詞：
+                </span>
+                <button onclick="copyPrompt('prompt-2', this)" class="text-xs bg-brandYellow text-slate-900 px-3 py-1.5 rounded-lg font-bold hover:bg-amber-400 transition-colors flex items-center gap-1 shadow-sm shadow-amber-100">
+                  <i class="fa-regular fa-copy"></i> <span>複製 Prompt</span>
+                </button>
+              </div>
+              <div class="relative flex-grow">
+                <textarea id="prompt-2" readonly class="w-full h-64 p-4 bg-slate-900 text-slate-200 font-mono text-sm rounded-2xl border border-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-brandYellow">請在剛才的貪食蛇遊戲中，加入以下功能：
+
+1. 分數越高，蛇移動速度越快
+2. 加入生命值，撞牆或撞到自己會扣生命
+3. 加入關卡等級顯示
+4. 請說明你修改了哪些程式碼，以及每個功能的邏輯</textarea>
+                <div class="absolute bottom-3 right-3 text-[10px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded">
+                  唯讀，按上方複製
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 🔴 -->
+      <div id="step-3" class="bg-white rounded-3xl border-2 border-purple-100 shadow-sm overflow-hidden card-transition">
+        <!-- 卡片標題 -->
+        <button onclick="toggleStep('step-3-content')" class="w-full text-left p-6 md:p-8 flex items-center justify-between hover:bg-purple-50/20 transition-colors focus:outline-none">
+          <div class="flex items-start md:items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-purple-100 text-brandPurple flex items-center justify-center font-display font-extrabold text-xl shrink-0">
+              03
+            </div>
+            <div>
+              <span class="text-brandPurple text-xs font-extrabold tracking-wider uppercase">Step 3 ｜ 高階版</span>
+              <h3 class="text-xl md:text-2xl font-black text-slate-900 mt-0.5">打造自己的主題風格</h3>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="hidden sm:inline-block text-xs bg-purple-50 text-brandPurple px-3 py-1 rounded-full font-bold">融入個人特色</span>
+            <i id="step-3-content-icon" class="fa-solid fa-chevron-down text-slate-400 text-lg transition-transform duration-300"></i>
+          </div>
+        </button>
+
+        <!-- 卡片內容 -->
+        <div id="step-3-content" class="hidden border-t border-slate-100 p-6 md:p-8 bg-slate-50/50">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <!-- 學習目標 & 學生要做到的事 -->
+            <div class="md:col-span-5 space-y-4">
+              <div class="bg-purple-50/50 border border-purple-100 rounded-2xl p-5">
+                <h4 class="text-sm font-extrabold text-brandPurple uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <i class="fa-solid fa-palette"></i> 學習目標
+                </h4>
+                <p class="text-slate-700 text-sm leading-relaxed font-medium">
+                  把單調的程式作品變成有個人特色、符合特定科系或生活的客製化專案。
+                </p>
+              </div>
+
+              <!-- 任務清單 -->
+              <div class="bg-white border border-slate-200 rounded-2xl p-5">
+                <h4 class="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                  <i class="fa-solid fa-square-check text-brandPurple"></i> 你的任務清單：
+                </h4>
+                <ul class="space-y-2 text-sm text-slate-600 font-medium pl-1">
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandPurple"></i> 選擇一種主題風格</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandPurple"></i> 設計遊戲封面 (視覺主題)</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandPurple"></i> 用 HTML Audio 加入簡單音效</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandPurple"></i> 設計手機觸控虛擬按鈕</li>
+                  <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-[6px] text-brandPurple"></i> 設計隱藏加分寶物</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Prompt 複製與動態切換 -->
+            <div class="md:col-span-7 flex flex-col">
+              <!-- 主題選擇按鈕群 -->
+              <div class="mb-4">
+                <span class="block text-xs font-bold text-slate-500 mb-2">🎈 選擇你要創作的主題（點擊切換 Prompt）：</span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button id="btn-theme-tech" onclick="changeTheme('tech')" class="px-2 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all active-theme-btn">
+                    🛸 未來科技風
+                  </button>
+                  <button id="btn-theme-pixel" onclick="changeTheme('pixel')" class="px-2 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all">
+                    👾 可愛像素風
+                  </button>
+                  <button id="btn-theme-food" onclick="changeTheme('food')" class="px-2 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all">
+                    🍜 餐旅美食風
+                  </button>
+                  <button id="btn-theme-lang" onclick="changeTheme('lang')" class="px-2 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all">
+                    🇬🇧 外語闖關風
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                  <i class="fa-solid fa-terminal text-brandPurple"></i> 第三輪客製化 Prompt：
+                </span>
+                <button onclick="copyPrompt('prompt-3', this)" class="text-xs bg-brandPurple text-white px-3 py-1.5 rounded-lg font-bold hover:bg-purple-700 transition-colors flex items-center gap-1 shadow-sm shadow-purple-100">
+                  <i class="fa-regular fa-copy"></i> <span>複製客製 Prompt</span>
+                </button>
+              </div>
+              
+              <div class="relative flex-grow">
+                <textarea id="prompt-3" readonly class="w-full h-64 p-4 bg-slate-900 text-slate-200 font-mono text-sm rounded-2xl border border-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-brandPurple">請把貪食蛇遊戲改成我自己的主題風格：
+
+主題：未來科技風 (視覺充滿霓虹藍、科技電路感)
+
+請幫我加入：
+1. 遊戲封面
+2. 音效或提示音
+3. 手機觸控按鈕
+4. 特殊道具或隱藏加分物
+5. 請保留中文註解，並告訴我哪些地方可以自己再修改</textarea>
+                <div class="absolute bottom-3 right-3 text-[10px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded">
+                  隨上方主題切換，點擊複製
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Vibe Coding 說明區 (互動圖解) -->
+  <section id="vibe-section" class="bg-white py-16 px-6 border-y border-slate-100">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-12">
+        <span class="text-brandPurple font-extrabold tracking-widest text-sm uppercase">What is Vibe Coding?</span>
+        <h2 class="text-3xl font-black text-slate-900 mt-2">什麼是 Vibe Coding？</h2>
+        <div class="max-w-2xl mx-auto text-slate-600 mt-3 font-medium text-base leading-relaxed">
+          💡 用高中生聽得懂的話來說：
+          <div class="bg-purple-50 text-brandPurple p-3 rounded-2xl border border-purple-100 mt-2 font-bold text-sm">
+            「Vibe Coding 就是先用自然語言說出你想做的感覺，再和 AI 一起修改、測試、理解程式。」
+          </div>
+        </div>
+      </div>
+
+      <!-- 流程圖解 -->
+      <div class="relative max-w-4xl mx-auto">
+        <!-- 手機垂直/電腦水平的流程線 -->
+        <div class="absolute left-6 md:left-1/2 top-0 bottom-0 w-1 bg-purple-100 -translate-x-1/2 z-0"></div>
+
+        <div class="space-y-8 relative z-10">
+          <!-- 節點 1 -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div class="w-full md:w-5/12 flex md:justify-end items-center gap-3">
+              <span class="bg-purple-100 text-brandPurple font-black px-3 py-1 rounded-full text-xs">STEP 1</span>
+              <h4 class="text-lg font-black text-slate-800">產生靈感與想法</h4>
+            </div>
+            <div class="w-12 h-12 bg-brandPurple text-white rounded-full flex items-center justify-center font-bold text-lg border-4 border-white shadow-md mx-0 md:mx-auto my-3 md:my-0">
+              💡
+            </div>
+            <p class="w-full md:w-5/12 text-sm text-slate-500 pl-14 md:pl-0 font-medium">想玩什麼主題？想加入什麼特色功能？先在腦中畫出藍圖。</p>
+          </div>
+
+          <!-- 節點 2 -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div class="w-full md:w-5/12 flex md:justify-end items-center gap-3 md:order-3">
+              <span class="bg-purple-100 text-brandPurple font-black px-3 py-1 rounded-full text-xs">STEP 2</span>
+              <h4 class="text-lg font-black text-slate-800">撰寫 Prompt 提示詞</h4>
+            </div>
+            <div class="w-12 h-12 bg-brandPurple text-white rounded-full flex items-center justify-center font-bold text-lg border-4 border-white shadow-md mx-0 md:mx-auto my-3 md:my-0 md:order-2">
+              ✍️
+            </div>
+            <p class="w-full md:w-5/12 text-sm text-slate-500 pl-14 md:pl-0 md:text-right font-medium md:order-1">把你想做的功能用具體、有條理的中文寫下來餵給 AI。</p>
+          </div>
+
+          <!-- 節點 3 -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div class="w-full md:w-5/12 flex md:justify-end items-center gap-3">
+              <span class="bg-purple-100 text-brandPurple font-black px-3 py-1 rounded-full text-xs">STEP 3</span>
+              <h4 class="text-lg font-black text-slate-800">AI 產生程式碼</h4>
+            </div>
+            <div class="w-12 h-12 bg-brandPurple text-white rounded-full flex items-center justify-center font-bold text-lg border-4 border-white shadow-md mx-0 md:mx-auto my-3 md:my-0">
+              🤖
+            </div>
+            <p class="w-full md:w-5/12 text-sm text-slate-500 pl-14 md:pl-0 font-medium">AI 吐出 HTML 檔案。這時不用急著看懂，先把它「跑跑看」！</p>
+          </div>
+
+          <!-- 節點 4 -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div class="w-full md:w-5/12 flex md:justify-end items-center gap-3 md:order-3">
+              <span class="bg-purple-100 text-brandPurple font-black px-3 py-1 rounded-full text-xs">STEP 4</span>
+              <h4 class="text-lg font-black text-slate-800">實機測試與尋找問題</h4>
+            </div>
+            <div class="w-12 h-12 bg-brandPurple text-white rounded-full flex items-center justify-center font-bold text-lg border-4 border-white shadow-md mx-0 md:mx-auto my-3 md:my-0 md:order-2">
+              🕹️
+            </div>
+            <p class="w-full md:w-5/12 text-sm text-slate-500 pl-14 md:pl-0 md:text-right font-medium md:order-1">開始玩遊戲，找出哪裡卡卡的？或者是想再增加更多有趣的機制。</p>
+          </div>
+
+          <!-- 節點 5 -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div class="w-full md:w-5/12 flex md:justify-end items-center gap-3">
+              <span class="bg-purple-100 text-brandPurple font-black px-3 py-1 rounded-full text-xs">STEP 5</span>
+              <h4 class="text-lg font-black text-slate-800">持續修改、理解與完成</h4>
+            </div>
+            <div class="w-12 h-12 bg-brandPurple text-white rounded-full flex items-center justify-center font-bold text-lg border-4 border-white shadow-md mx-0 md:mx-auto my-3 md:my-0">
+              🏆
+            </div>
+            <p class="w-full md:w-5/12 text-sm text-slate-500 pl-14 md:pl-0 font-medium">在測試中學習邏輯，最終不但獲得酷炫的作品，還把網頁程式碼內化成自己的實力！</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 各科群主題建議區 -->
+  <section id="suggest-section" class="py-16 px-6 bg-slate-50/50">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-10">
+        <span class="text-brandOrange font-extrabold tracking-widest text-sm uppercase">Curriculum Suggestions</span>
+        <h2 class="text-3xl font-black text-slate-900 mt-2">各科群主題跨域建議</h2>
+        <p class="text-slate-500 mt-2">不只是寫程式！試著把你的專業學科融入這款小遊戲吧！</p>
+      </div>
+
+      <!-- 彩色表格與響應式卡片 -->
+      <div class="overflow-hidden bg-white border border-slate-200 rounded-3xl shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-950 text-white text-sm font-bold">
+                <th class="p-4 md:p-5 w-1/4">科群推薦</th>
+                <th class="p-4 md:p-5 w-1/4">建議主題名稱</th>
+                <th class="p-4 md:p-5 w-2/4">創意靈感與實踐方案</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-sm">
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="p-4 md:p-5">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-pink-100 text-pink-600 rounded-full font-bold text-xs">
+                    🎨 設計群
+                  </span>
+                </td>
+                <td class="p-4 md:p-5 font-black text-slate-800">可愛像素風</td>
+                <td class="p-4 md:p-5 text-slate-600 leading-relaxed">
+                  大展設計長才，運用 8-bit 或像素藝術（Pixel Art）重新設計貪食蛇的蛇頭與食物。可以調整 Canvas 的渲染設定，呈現充滿復古電玩感的美學。
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="p-4 md:p-5">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-600 rounded-full font-bold text-xs">
+                    🍜 餐旅群
+                  </span>
+                </td>
+                <td class="p-4 md:p-5 font-black text-slate-800">餐旅美食風</td>
+                <td class="p-4 md:p-5 text-slate-600 leading-relaxed">
+                  把蛇變成「筷子」或「叉子」，地圖上的食物隨機出現珍珠奶茶、鳳梨酥或滷肉飯等台灣在地小吃，吃到不同的菜色還會有對應的美食介紹！
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="p-4 md:p-5">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-brandBlue rounded-full font-bold text-xs">
+                    🇬🇧 外語群
+                  </span>
+                </td>
+                <td class="p-4 md:p-5 font-black text-slate-800">外語闖關風</td>
+                <td class="p-4 md:p-5 text-slate-600 leading-relaxed">
+                  遊戲會提示一個英文單字（如 Apple），地圖上出現 A, P, P, L, E 等字母，必須按照正確拼音順序吃掉字母，吃錯則扣分，邊玩遊戲邊複習英文單字！
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="p-4 md:p-5">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-brandPurple rounded-full font-bold text-xs">
+                    ⚡ 電機資電群
+                  </span>
+                </td>
+                <td class="p-4 md:p-5 font-black text-slate-800">未來科技風</td>
+                <td class="p-4 md:p-5 text-slate-600 leading-relaxed">
+                  加入電路板視覺背景，將蛇設計成「電流線」，食物則是「電晶體」或「微處理器」。吃掉食物時，還能產生極具張力的霓虹光暈特效。
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="p-4 md:p-5">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-brandGreen rounded-full font-bold text-xs">
+                    📊 商管群
+                  </span>
+                </td>
+                <td class="p-4 md:p-5 font-black text-slate-800">排行榜與數據統計</td>
+                <td class="p-4 md:p-5 text-slate-600 leading-relaxed">
+                  在遊戲結束後，利用陣列存儲多次分數，並製作出統計表。甚至可設計一鍵匯出 CSV 檔案的功能，結合資料庫思維，落實商業邏輯應用。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Debug 自學區 -->
+  <section id="debug-section" class="py-16 px-6 bg-white">
+    <div class="max-w-5xl mx-auto">
+      <div class="bg-amber-50/60 border-2 border-brandYellow rounded-3xl p-6 md:p-10">
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+          <!-- 左側介紹 -->
+          <div class="lg:w-5/12 space-y-4">
+            <span class="bg-brandYellow text-slate-900 text-xs font-black px-4 py-1.5 rounded-full inline-block">
+              🚨 DEBUG 自學求助
+            </span>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900">我卡關了，怎麼問 AI？</h2>
+            <p class="text-sm text-slate-600 leading-relaxed font-medium">
+              寫程式一定會遇到 Bug。當瀏覽器畫面動不了、按下按鈕沒反應時，<strong>千萬不要只複製全部程式叫 AI 重寫</strong>。
+            </p>
+            <p class="text-sm text-slate-600 leading-relaxed font-medium">
+              使用這個精心設計的「Debug 發問模板」，可以引導 AI 教你看懂錯誤，並只修改發生問題的最少段落。這才是進步最快的方式！
+            </p>
+            <div class="pt-2">
+              <button onclick="copyPrompt('prompt-debug', this)" class="bg-brandYellow hover:bg-amber-400 text-slate-900 font-extrabold px-5 py-3 rounded-xl flex items-center gap-2 transition-colors shadow-sm">
+                <i class="fa-regular fa-copy"></i> 複製 Debug Prompt 模板
+              </button>
+            </div>
+          </div>
+
+          <!-- 右側 Prompt 區域 -->
+          <div class="lg:w-7/12 w-full flex flex-col">
+            <span class="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-bug text-brandYellow"></i> 萬用除錯 (Debug) Prompt：
+            </span>
+            <textarea id="prompt-debug" readonly class="w-full h-64 p-4 bg-slate-900 text-slate-200 font-mono text-sm rounded-2xl border border-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-brandYellow">我的貪食蛇遊戲出現問題，請不要直接重寫全部程式。
+
+請幫我：
+1. 找出錯誤原因
+2. 用高中生聽得懂的方式解釋
+3. 告訴我是哪一段程式造成問題
+4. 提供最小修改版本
+5. 解釋我下次怎麼避免
+
+【以下是我的程式碼】：
+（在此貼上你的完整 HTML 程式碼）
+
+【以下是錯誤狀況/錯誤訊息】：
+（在此貼上網頁發生的狀況，或按 F12 打開 Console 看到的紅字報錯）</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 學習檢核表 -->
+  <section id="checklist-section" class="py-16 px-6 bg-slate-50/50">
+    <div class="max-w-3xl mx-auto">
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-10 shadow-sm">
+        <div class="text-center mb-8">
+          <span class="text-brandBlue font-extrabold tracking-widest text-sm uppercase">Learning Checklist</span>
+          <h2 class="text-2xl md:text-3xl font-black text-slate-900 mt-2">學習進度檢核表</h2>
+          <p class="text-slate-500 text-sm mt-1">自己檢核一下！點擊勾選看你的自學進度條吧！</p>
+        </div>
+
+        <!-- 自製進度條 -->
+        <div class="mb-8 bg-slate-100 rounded-full h-4 overflow-hidden relative border border-slate-200">
+          <div id="progress-bar" class="bg-gradient-to-r from-brandBlue to-brandGreen h-full w-0 transition-all duration-500"></div>
+          <span id="progress-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-slate-700">0%</span>
+        </div>
+
+        <!-- 檢核項目 -->
+        <div class="space-y-4">
+          <!-- Item 1 -->
+          <label class="flex items-start gap-3.5 p-4 bg-slate-50 hover:bg-blue-50/30 rounded-2xl border border-slate-100 cursor-pointer transition-colors group">
+            <input type="checkbox" onchange="updateProgress()" class="mt-1 w-5 h-5 rounded border-slate-300 text-brandBlue focus:ring-brandBlue shrink-0">
+            <div>
+              <span class="font-bold text-slate-800 block text-base group-hover:text-brandBlue transition-colors">我能說出貪食蛇需要哪些基本元素</span>
+              <span class="text-xs text-slate-400 font-medium">例如：遊戲畫布（Canvas）、蛇的位置陣列、食物隨機位置、方向按鍵監聽。</span>
+            </div>
+          </label>
+
+          <!-- Item 2 -->
+          <label class="flex items-start gap-3.5 p-4 bg-slate-50 hover:bg-blue-50/30 rounded-2xl border border-slate-100 cursor-pointer transition-colors group">
+            <input type="checkbox" onchange="updateProgress()" class="mt-1 w-5 h-5 rounded border-slate-300 text-brandBlue focus:ring-brandBlue shrink-0">
+            <div>
+              <span class="font-bold text-slate-800 block text-base group-hover:text-brandBlue transition-colors">我能用 Prompt 請 AI 產生第一版程式</span>
+              <span class="text-xs text-slate-400 font-medium">知道如何使用第一個 Prompt 引導 AI 吐出單一 HTML 檔案，並順利運行。</span>
+            </div>
+          </label>
+
+          <!-- Item 3 -->
+          <label class="flex items-start gap-3.5 p-4 bg-slate-50 hover:bg-blue-50/30 rounded-2xl border border-slate-100 cursor-pointer transition-colors group">
+            <input type="checkbox" onchange="updateProgress()" class="mt-1 w-5 h-5 rounded border-slate-300 text-brandBlue focus:ring-brandBlue shrink-0">
+            <div>
+              <span class="font-bold text-slate-800 block text-base group-hover:text-brandBlue transition-colors">我能測試遊戲是否能正常執行</span>
+              <span class="text-xs text-slate-400 font-medium">懂得如何把程式碼儲存成 .html 檔，並在瀏覽器雙擊打開，且可以用鍵盤操控。</span>
+            </div>
+          </label>
+
+          <!-- Item 4 -->
+          <label class="flex items-start gap-3.5 p-4 bg-slate-50 hover:bg-blue-50/30 rounded-2xl border border-slate-100 cursor-pointer transition-colors group">
+            <input type="checkbox" onchange="updateProgress()" class="mt-1 w-5 h-5 rounded border-slate-300 text-brandBlue focus:ring-brandBlue shrink-0">
+            <div>
+              <span class="font-bold text-slate-800 block text-base group-hover:text-brandBlue transition-colors">我能把錯誤訊息貼給 AI 並請它解釋</span>
+              <span class="text-xs text-slate-400 font-medium">不慌張！會按 F12 查看主控台（Console），並能用對話模板引導 AI 解除 Bug。</span>
+            </div>
+          </label>
+
+          <!-- Item 5 -->
+          <label class="flex items-start gap-3.5 p-4 bg-slate-50 hover:bg-blue-50/30 rounded-2xl border border-slate-100 cursor-pointer transition-colors group">
+            <input type="checkbox" onchange="updateProgress()" class="mt-1 w-5 h-5 rounded border-slate-300 text-brandBlue focus:ring-brandBlue shrink-0">
+            <div>
+              <span class="font-bold text-slate-800 block text-base group-hover:text-brandBlue transition-colors">我能修改遊戲功能，而不是只複製程式碼</span>
+              <span class="text-xs text-slate-400 font-medium">在 AI 修改時，我能閱讀它提供的說明，了解大概改了哪些變數或函式。</span>
+            </div>
+          </label>
+
+          <!-- Item 6 -->
+          <label class="flex items-start gap-3.5 p-4 bg-slate-50 hover:bg-blue-50/30 rounded-2xl border border-slate-100 cursor-pointer transition-colors group">
+            <input type="checkbox" onchange="updateProgress()" class="mt-1 w-5 h-5 rounded border-slate-300 text-brandBlue focus:ring-brandBlue shrink-0">
+            <div>
+              <span class="font-bold text-slate-800 block text-base group-hover:text-brandBlue transition-colors">我能說出自己作品的程式邏輯</span>
+              <span class="text-xs text-slate-400 font-medium">能像個專家一樣，清楚指著程式碼，跟老師或同學分享這款遊戲的運作原理。</span>
+            </div>
+          </label>
+
+          <!-- Item 7 -->
+          <label class="flex items-start gap-3.5 p-4 bg-slate-50 hover:bg-blue-50/30 rounded-2xl border border-slate-100 cursor-pointer transition-colors group">
+            <input type="checkbox" onchange="updateProgress()" class="mt-1 w-5 h-5 rounded border-slate-300 text-brandBlue focus:ring-brandBlue shrink-0">
+            <div>
+              <span class="font-bold text-slate-800 block text-base group-hover:text-brandBlue transition-colors">我能完成一個有個人風格的貪食蛇遊戲</span>
+              <span class="text-xs text-slate-400 font-medium">不論是未來風、餐飲美食風還是英文單字風，我順利打造出令人驚豔的主題作品！</span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 結尾提醒與金句框 -->
+  <footer class="py-16 px-6 bg-slate-900 text-white text-center">
+    <div class="max-w-4xl mx-auto">
+      <!-- 醒目的提示框 -->
+      <div class="bg-gradient-to-r from-brandBlue via-brandPurple to-brandOrange rounded-3xl p-1 mb-10 shadow-2xl">
+        <div class="bg-slate-900 rounded-[22px] px-6 py-10 md:py-12 space-y-4">
+          <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center text-3xl mx-auto mb-2 animate-bounce">
+            🌟
+          </div>
+          <h3 class="text-xl md:text-3xl font-black tracking-wide">
+            AI 可以幫你把想法變成程式，
+          </h3>
+          <h4 class="text-lg md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400">
+            但真正的學習，是你能看懂、改得動、說得出來。
+          </h4>
+          <div class="w-16 h-1 bg-white/20 mx-auto my-4 rounded-full"></div>
+          <p class="text-sm md:text-lg text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
+            不是「我叫 AI 寫好了」，<br class="hidden sm:inline">
+            而是<span class="text-white font-black underline decoration-brandYellow decoration-2">「我和 AI 一起把作品做出來，也把邏輯學起來」</span>。
+          </p>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-500 font-bold tracking-widest uppercase">
+        © 2026 AI + Vibe Coding 高中AI素養手冊(互動自學教材)
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // 展開/收合步驟卡片
+    function toggleStep(id) {
+      const content = document.getElementById(id);
+      const icon = document.getElementById(id + '-icon');
+      
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // 點擊導覽/首頁按鈕強制展開對應步驟卡片
+    function openStep(id) {
+      const content = document.getElementById(id);
+      const icon = document.getElementById(id + '-icon');
+      content.classList.remove('hidden');
+      icon.style.transform = 'rotate(180deg)';
+    }
+
+    // 動態切換高階主題 Prompt
+    const themePrompts = {
+      tech: `請把貪食蛇遊戲改成我自己的主題風格：
+
+主題：未來科技風 (霓虹藍、霓虹紫，滿滿的電路板與數位科技感)
+
+請幫我加入：
+1. 遊戲封面
+2. 音效或提示音
+3. 手機觸控按鈕
+4. 特殊道具或隱藏加分物 (例如：電晶體、高頻晶片，吃掉會有閃爍光圈特效)
+5. 請保留中文註解，並告訴我哪些地方可以自己再修改`,
+      
+      pixel: `請把貪食蛇遊戲改成我自己的主題風格：
+
+主題：可愛像素風 (8-bit 復古電玩質感、繽紛馬卡龍粉嫩色彩)
+
+請幫我加入：
+1. 遊戲封面 (帶有像素積木感)
+2. 音效或提示音 (懷舊復古的 Bip Bip 聲)
+3. 手機觸控按鈕
+4. 特殊道具或隱藏加分物 (例如：像素愛心、星星加分球)
+5. 請保留中文註解，並告訴我哪些地方可以自己再修改`,
+      
+      food: `請把貪食蛇遊戲改成我自己的主題風格：
+
+主題：餐旅美食風 (蛇是一根可愛的筷子或叉子，背景是精緻餐桌餐具)
+
+請幫我加入：
+1. 遊戲封面
+2. 音效或提示音 (吃到食物時會發出「好吃！」或咀嚼的音效)
+3. 手機觸控按鈕
+4. 特殊道具或隱藏加分物 (隨機出現「珍珠奶茶」、「滷肉飯」、「小籠包」，並顯示簡單台灣美食卡片介紹)
+5. 請保留中文註解，並告訴我哪些地方可以自己再修改`,
+      
+      lang: `請把貪食蛇遊戲改成我自己的主題風格：
+
+主題：外語闖關風 (畫面上會隨機指定一個英文單字，例如「FRUIT」)
+
+請幫我加入：
+1. 遊戲封面
+2. 音效或提示音
+3. 手機觸控按鈕
+4. 特殊道具與拼字得分機制 (畫面會出現字母 F, R, U, I, T 等，蛇必須按照正確拼音順序吃掉，拼對得分，吃錯字母則扣分或縮短長度)
+5. 請保留中文註解，並告訴我哪些地方可以自己再修改`
+    };
+
+    function changeTheme(themeKey) {
+      // 1. 更新 Prompt Textarea 內容
+      document.getElementById('prompt-3').value = themePrompts[themeKey];
+      
+      // 2. 更新按鈕樣式
+      const buttons = [
+        { id: 'btn-theme-tech', colorClass: 'border-brandBlue', bgClass: 'bg-blue-50', textClass: 'text-brandBlue' },
+        { id: 'btn-theme-pixel', colorClass: 'border-pink-500', bgClass: 'bg-pink-50', textClass: 'text-pink-600' },
+        { id: 'btn-theme-food', colorClass: 'border-brandOrange', bgClass: 'bg-orange-50', textClass: 'text-brandOrange' },
+        { id: 'btn-theme-lang', colorClass: 'border-brandPurple', bgClass: 'bg-purple-50', textClass: 'text-brandPurple' }
+      ];
+
+      buttons.forEach(btn => {
+        const element = document.getElementById(btn.id);
+        if (btn.id === 'btn-theme-' + themeKey) {
+          element.className = `px-2 py-2 text-xs font-bold rounded-xl border-2 ${btn.colorClass} ${btn.bgClass} ${btn.textClass} transition-all scale-105 shadow-sm`;
+        } else {
+          element.className = `px-2 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all`;
+        }
+      });
+    }
+
+    // 初始化第一個按鈕狀態
+    changeTheme('tech');
+
+    // 一鍵複製 Prompt
+    function copyPrompt(textareaId, buttonElement) {
+      const textarea = document.getElementById(textareaId);
+      textarea.select();
+      textarea.setSelectionRange(0, 99999); // 手機相容
+
+      try {
+        document.execCommand('copy');
+        
+        // 按鈕視覺反饋
+        const originalText = buttonElement.innerHTML;
+        buttonElement.innerHTML = `<i class="fa-solid fa-check"></i> 複製成功！`;
+        buttonElement.classList.add('scale-95');
+        
+        setTimeout(() => {
+          buttonElement.innerHTML = originalText;
+          buttonElement.classList.remove('scale-95');
+        }, 2000);
+      } catch (err) {
+        console.error('複製失敗:', err);
+      }
+    }
+
+    // 檢核表進度條更新
+    function updateProgress() {
+      const checkboxes = document.querySelectorAll('#checklist-section input[type="checkbox"]');
+      const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+      const totalCount = checkboxes.length;
+      const percentage = Math.round((checkedCount / totalCount) * 100);
+
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+
+      progressBar.style.width = percentage + '%';
+      progressText.textContent = percentage + '%';
+
+      // 當完全達成時，進度條文字變化
+      if (percentage === 100) {
+        progressText.textContent = '🎉 太棒了！你已掌握全部核心邏輯！';
+        progressText.classList.add('text-white');
+      } else {
+        progressText.textContent = percentage + '%';
+        progressText.classList.remove('text-white');
+      }
+    }
+  </script>
+</body>
+</html>
