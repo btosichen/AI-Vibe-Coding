@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>進階貪食蛇小遊戲</title>
+
+  <style>
+    body {
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+    }
+
+    h1 {
+      color: #2c7a7b;
+    }
+
+    canvas {
+      background-color: white;
+      border: 3px solid #2c7a7b;
+      margin-top: 10px;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 8px 16px;
+      margin: 8px;
+      cursor: pointer;
+      border-radius: 8px;
+      border: none;
+      background-color: #38b2ac;
+      color: white;
+    }
+
+    button:hover {
+      background-color: #2c7a7b;
+    }
+
+    .box {
+      width: 430px;
+      margin: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>進階貪食蛇小遊戲</h1>
+
+  <div class="box">
+    <p>
+      分數：<span id="score">0</span>　
+      生命值：<span id="life">3</span>　
+      關卡：<span id="level">1</span>
+    </p>
+
+    <button onclick="startGame()">開始遊戲</button>
+    <button onclick="restartGame()">重新開始</button>
+
+    <br>
+
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <h3>玩法說明</h3>
+    <p>
+      使用鍵盤方向鍵控制蛇的移動。<br>
+      吃到紅色食物可以加分。<br>
+      分數越高，速度越快，關卡也會提升。<br>
+      撞牆或撞到自己會扣 1 點生命。<br>
+      生命值歸零時，遊戲結束。
+    </p>
+  </div>
+
+  <script>
+    // 取得畫布與繪圖工具
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // 每一格的大小
+    const gridSize = 20;
+
+    // 遊戲資料
+    let score = 0;
+    let life = 3;
+    let level = 1;
+
+    // 遊戲速度，數字越小代表速度越快
+    let speed = 150;
+
+    // 蛇的身體
+    let snake = [
+      { x: 200, y: 200 },
+      { x: 180, y: 200 },
+      { x: 160, y: 200 }
+    ];
+
+    // 食物位置
+    let food = { x: 100, y: 100 };
+
+    // 蛇的移動方向
+    let dx = gridSize;
+    let dy = 0;
+
+    // 遊戲計時器
+    let gameInterval;
+
+    // 遊戲是否正在進行
+    let isGameRunning = false;
+
+    // 畫出遊戲畫面
+    function drawGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 畫食物
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x, food.y, gridSize, gridSize);
+
+      // 畫蛇
+      ctx.fillStyle = "green";
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillRect(snake[i].x, snake[i].y, gridSize, gridSize);
+      }
+    }
+
+    // 移動蛇
+    function moveSnake() {
+      const head = {
+        x: snake[0].x + dx,
+        y: snake[0].y + dy
+      };
+
+      snake.unshift(head);
+
+      // 吃到食物
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        updateLevelAndSpeed();
+        updateInfo();
+        createFood();
+      } else {
+        snake.pop();
+      }
+    }
+
+    // 隨機產生食物
+    function createFood() {
+      food.x = Math.floor(Math.random() * 20) * gridSize;
+      food.y = Math.floor(Math.random() * 20) * gridSize;
+    }
+
+    // 更新關卡與速度
+    function updateLevelAndSpeed() {
+      // 每 5 分提升 1 關
+      level = Math.floor(score / 5) + 1;
+
+      // 分數越高，速度越快
+      // 最快限制在 60，避免太鬼畜
+      speed = 150 - (level - 1) * 15;
+
+      if (speed < 60) {
+        speed = 60;
+      }
+
+      // 重新設定遊戲速度
+      clearInterval(gameInterval);
+      gameInterval = setInterval(gameLoop, speed);
+    }
+
+    // 更新畫面上的分數、生命值、關卡
+    function updateInfo() {
+      document.getElementById("score").textContent = score;
+      document.getElementById("life").textContent = life;
+      document.getElementById("level").textContent = level;
+    }
+
+    // 檢查是否撞到牆壁或自己
+    function checkHit() {
+      const head = snake[0];
+
+      // 撞牆
+      if (
+        head.x < 0 ||
+        head.x >= canvas.width ||
+        head.y < 0 ||
+        head.y >= canvas.height
+      ) {
+        loseLife();
+      }
+
+      // 撞到自己
+      for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+          loseLife();
+        }
+      }
+    }
+
+    // 扣生命
+    function loseLife() {
+      life--;
+      updateInfo();
+
+      // 如果生命值歸零，遊戲結束
+      if (life <= 0) {
+        endGame();
+      } else {
+        alert("撞到了！剩下生命值：" + life);
+
+        // 扣生命後，把蛇放回初始位置
+        resetSnakePosition();
+      }
+    }
+
+    // 重設蛇的位置，但保留分數、生命與關卡
+    function resetSnakePosition() {
+      snake = [
+        { x: 200, y: 200 },
+        { x: 180, y: 200 },
+        { x: 160, y: 200 }
+      ];
+
+      dx = gridSize;
+      dy = 0;
+    }
+
+    // 遊戲主流程
+    function gameLoop() {
+      moveSnake();
+      checkHit();
+      drawGame();
+    }
+
+    // 開始遊戲
+    function startGame() {
+      if (!isGameRunning) {
+        isGameRunning = true;
+        gameInterval = setInterval(gameLoop, speed);
+      }
+    }
+
+    // 結束遊戲
+    function endGame() {
+      clearInterval(gameInterval);
+      isGameRunning = false;
+      alert("遊戲結束！你的分數是：" + score);
+    }
+
+    // 重新開始遊戲
+    function restartGame() {
+      clearInterval(gameInterval);
+
+      score = 0;
+      life = 3;
+      level = 1;
+      speed = 150;
+
+      snake = [
+        { x: 200, y: 200 },
+        { x: 180, y: 200 },
+        { x: 160, y: 200 }
+      ];
+
+      food = { x: 100, y: 100 };
+
+      dx = gridSize;
+      dy = 0;
+
+      isGameRunning = false;
+
+      updateInfo();
+      drawGame();
+    }
+
+    // 監聽鍵盤方向鍵
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "ArrowUp" && dy === 0) {
+        dx = 0;
+        dy = -gridSize;
+      } else if (event.key === "ArrowDown" && dy === 0) {
+        dx = 0;
+        dy = gridSize;
+      } else if (event.key === "ArrowLeft" && dx === 0) {
+        dx = -gridSize;
+        dy = 0;
+      } else if (event.key === "ArrowRight" && dx === 0) {
+        dx = gridSize;
+        dy = 0;
+      }
+    });
+
+    // 初始畫面
+    updateInfo();
+    drawGame();
+  </script>
+
+</body>
+</html>
