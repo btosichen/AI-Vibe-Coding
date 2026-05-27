@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>餐旅美食風貪食蛇</title>
+
+  <style>
+    body {
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      text-align: center;
+      background: #fff3dc;
+      margin: 0;
+    }
+
+    h1 {
+      color: #8b4513;
+    }
+
+    .game-box {
+      max-width: 480px;
+      margin: 20px auto;
+      background: #fffaf0;
+      padding: 15px;
+      border-radius: 20px;
+      box-shadow: 0 0 12px #d9b382;
+    }
+
+    canvas {
+      background: #f8e6c8;
+      border: 5px solid #b8860b;
+      border-radius: 15px;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 10px 18px;
+      margin: 6px;
+      border: none;
+      border-radius: 10px;
+      background: #ff914d;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #e76f2c;
+    }
+
+    .info {
+      font-size: 18px;
+      margin: 10px;
+    }
+
+    .control button {
+      width: 70px;
+      height: 50px;
+      font-size: 22px;
+    }
+
+    .food-card {
+      background: #fff0c9;
+      border: 2px solid #d69b3a;
+      border-radius: 15px;
+      padding: 10px;
+      margin-top: 10px;
+      min-height: 60px;
+    }
+
+    /* 遊戲封面 */
+    #cover {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(#fff1c7, #ffd6a5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .cover-box {
+      background: white;
+      padding: 30px;
+      border-radius: 25px;
+      width: 80%;
+      max-width: 420px;
+      box-shadow: 0 0 20px #b57b3a;
+    }
+
+    .cover-icon {
+      font-size: 60px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 遊戲封面 -->
+  <div id="cover">
+    <div class="cover-box">
+      <div class="cover-icon">🥢🍜🍱</div>
+      <h1>美食貪食蛇</h1>
+      <p>
+        你是一雙可愛筷子，<br>
+        在精緻餐桌上尋找台灣美食！
+      </p>
+      <button onclick="closeCover()">開始進入遊戲</button>
+    </div>
+  </div>
+
+  <div class="game-box">
+    <h1>🥢 美食貪食蛇</h1>
+
+    <div class="info">
+      分數：<span id="score">0</span>　
+      生命：<span id="life">3</span>　
+      關卡：<span id="level">1</span>
+    </div>
+
+    <button onclick="startGame()">開始遊戲</button>
+    <button onclick="restartGame()">重新開始</button>
+
+    <br>
+
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <h3>手機觸控按鈕</h3>
+    <div class="control">
+      <button onclick="changeDirection('up')">⬆️</button><br>
+      <button onclick="changeDirection('left')">⬅️</button>
+      <button onclick="changeDirection('down')">⬇️</button>
+      <button onclick="changeDirection('right')">➡️</button>
+    </div>
+
+    <div class="food-card" id="foodCard">
+      🍽️ 吃到特殊台灣美食，這裡會出現介紹卡片！
+    </div>
+
+    <h3>玩法說明</h3>
+    <p>
+      用鍵盤方向鍵或手機按鈕控制筷子蛇。<br>
+      吃到一般食物加 1 分。<br>
+      吃到台灣美食道具會加更多分，還會出現美食介紹。<br>
+      撞牆或撞到自己會扣生命。
+    </p>
+  </div>
+
+  <script>
+    // 取得畫布
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // 每一格大小
+    const gridSize = 20;
+
+    // 遊戲資料
+    let score = 0;
+    let life = 3;
+    let level = 1;
+    let speed = 160;
+
+    // 蛇的身體，這裡設定成「筷子蛇」
+    let snake = [
+      { x: 200, y: 200 },
+      { x: 180, y: 200 },
+      { x: 160, y: 200 }
+    ];
+
+    // 一般食物
+    let food = { x: 100, y: 100 };
+
+    // 特殊美食道具
+    let specialFood = null;
+
+    // 台灣美食資料
+    const taiwanFoods = [
+      {
+        name: "珍珠奶茶",
+        icon: "🧋",
+        point: 3,
+        text: "珍珠奶茶是台灣經典飲品，Q彈珍珠加上香濃奶茶，超人氣！"
+      },
+      {
+        name: "滷肉飯",
+        icon: "🍚",
+        point: 4,
+        text: "滷肉飯是台灣代表小吃，香噴噴的滷肉配白飯，超下飯！"
+      },
+      {
+        name: "小籠包",
+        icon: "🥟",
+        point: 5,
+        text: "小籠包皮薄多汁，咬下去有湯汁，是台灣觀光美食亮點。"
+      }
+    ];
+
+    // 移動方向
+    let dx = gridSize;
+    let dy = 0;
+
+    // 遊戲計時器
+    let gameInterval;
+    let isGameRunning = false;
+
+    // 關閉封面
+    function closeCover() {
+      document.getElementById("cover").style.display = "none";
+    }
+
+    // 畫遊戲畫面
+    function drawGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawTableBackground();
+      drawFood();
+      drawSpecialFood();
+      drawSnake();
+    }
+
+    // 畫餐桌背景
+    function drawTableBackground() {
+      ctx.fillStyle = "#f8e6c8";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 簡單餐具裝飾
+      ctx.font = "24px Arial";
+      ctx.fillText("🍽️", 20, 35);
+      ctx.fillText("🍴", 350, 35);
+      ctx.fillText("🥄", 20, 380);
+      ctx.fillText("🍷", 350, 380);
+    }
+
+    // 畫一般食物
+    function drawFood() {
+      ctx.font = "22px Arial";
+      ctx.fillText("🍓", food.x, food.y + 18);
+    }
+
+    // 畫特殊食物
+    function drawSpecialFood() {
+      if (specialFood !== null) {
+        ctx.font = "24px Arial";
+        ctx.fillText(specialFood.icon, specialFood.x, specialFood.y + 18);
+      }
+    }
+
+    // 畫筷子蛇
+    function drawSnake() {
+      for (let i = 0; i < snake.length; i++) {
+        if (i === 0) {
+          // 蛇頭畫成可愛筷子
+          ctx.font = "22px Arial";
+          ctx.fillText("🥢", snake[i].x, snake[i].y + 18);
+        } else {
+          // 身體用米飯小點表示
+          ctx.fillStyle = "#8b4513";
+          ctx.fillRect(snake[i].x, snake[i].y, gridSize, gridSize);
+        }
+      }
+    }
+
+    // 移動蛇
+    function moveSnake() {
+      const head = {
+        x: snake[0].x + dx,
+        y: snake[0].y + dy
+      };
+
+      snake.unshift(head);
+
+      // 吃到一般食物
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        playEatSound();
+        createFood();
+        maybeCreateSpecialFood();
+        updateLevelAndSpeed();
+        updateInfo();
+      }
+      // 吃到特殊台灣美食
+      else if (
+        specialFood !== null &&
+        head.x === specialFood.x &&
+        head.y === specialFood.y
+      ) {
+        score += specialFood.point;
+        playEatSound();
+        showFoodCard(specialFood);
+        specialFood = null;
+        updateLevelAndSpeed();
+        updateInfo();
+      }
+      else {
+        snake.pop();
+      }
+    }
+
+    // 產生一般食物
+    function createFood() {
+      food.x = Math.floor(Math.random() * 20) * gridSize;
+      food.y = Math.floor(Math.random() * 20) * gridSize;
+    }
+
+    // 隨機產生特殊食物
+    function maybeCreateSpecialFood() {
+      // 大約 30% 機率出現特殊美食
+      const chance = Math.random();
+
+      if (chance < 0.3 && specialFood === null) {
+        const randomIndex = Math.floor(Math.random() * taiwanFoods.length);
+        const chosenFood = taiwanFoods[randomIndex];
+
+        specialFood = {
+          name: chosenFood.name,
+          icon: chosenFood.icon,
+          point: chosenFood.point,
+          text: chosenFood.text,
+          x: Math.floor(Math.random() * 20) * gridSize,
+          y: Math.floor(Math.random() * 20) * gridSize
+        };
+      }
+    }
+
+    // 顯示美食卡片
+    function showFoodCard(foodData) {
+      document.getElementById("foodCard").innerHTML =
+        foodData.icon + " <b>" + foodData.name + "</b><br>" +
+        "加分：+" + foodData.point + "<br>" +
+        foodData.text;
+    }
+
+    // 更新速度與關卡
+    function updateLevelAndSpeed() {
+      level = Math.floor(score / 5) + 1;
+
+      speed = 160 - (level - 1) * 15;
+
+      // 最快不要低於 60，避免太快
+      if (speed < 60) {
+        speed = 60;
+      }
+
+      if (isGameRunning) {
+        clearInterval(gameInterval);
+        gameInterval = setInterval(gameLoop, speed);
+      }
+    }
+
+    // 更新畫面文字
+    function updateInfo() {
+      document.getElementById("score").textContent = score;
+      document.getElementById("life").textContent = life;
+      document.getElementById("level").textContent = level;
+    }
+
+    // 檢查是否撞到
+    function checkHit() {
+      const head = snake[0];
+
+      // 撞牆
+      if (
+        head.x < 0 ||
+        head.x >= canvas.width ||
+        head.y < 0 ||
+        head.y >= canvas.height
+      ) {
+        loseLife();
+        return;
+      }
+
+      // 撞到自己
+      for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+          loseLife();
+          return;
+        }
+      }
+    }
+
+    // 扣生命
+    function loseLife() {
+      life--;
+      updateInfo();
+
+      if (life <= 0) {
+        endGame();
+      } else {
+        alert("撞到了！扣 1 點生命，剩下：" + life);
+        resetSnakePosition();
+      }
+    }
+
+    // 重設蛇的位置
+    function resetSnakePosition() {
+      snake = [
+        { x: 200, y: 200 },
+        { x: 180, y: 200 },
+        { x: 160, y: 200 }
+      ];
+
+      dx = gridSize;
+      dy = 0;
+    }
+
+    // 遊戲主流程
+    function gameLoop() {
+      moveSnake();
+      checkHit();
+      drawGame();
+    }
+
+    // 開始遊戲
+    function startGame() {
+      if (!isGameRunning) {
+        isGameRunning = true;
+        gameInterval = setInterval(gameLoop, speed);
+      }
+    }
+
+    // 結束遊戲
+    function endGame() {
+      clearInterval(gameInterval);
+      isGameRunning = false;
+      alert("遊戲結束！你的分數是：" + score);
+    }
+
+    // 重新開始
+    function restartGame() {
+      clearInterval(gameInterval);
+
+      score = 0;
+      life = 3;
+      level = 1;
+      speed = 160;
+      specialFood = null;
+
+      snake = [
+        { x: 200, y: 200 },
+        { x: 180, y: 200 },
+        { x: 160, y: 200 }
+      ];
+
+      food = { x: 100, y: 100 };
+
+      dx = gridSize;
+      dy = 0;
+
+      isGameRunning = false;
+
+      document.getElementById("foodCard").innerHTML =
+        "🍽️ 吃到特殊台灣美食，這裡會出現介紹卡片！";
+
+      updateInfo();
+      drawGame();
+    }
+
+    // 播放吃到食物的提示音
+    function playEatSound() {
+      // 語音說出「好吃」
+      const msg = new SpeechSynthesisUtterance("好吃");
+      msg.lang = "zh-TW";
+      msg.rate = 1.2;
+      speechSynthesis.speak(msg);
+    }
+
+    // 改變方向，鍵盤和手機按鈕都可以使用
+    function changeDirection(direction) {
+      if (direction === "up" && dy === 0) {
+        dx = 0;
+        dy = -gridSize;
+      } else if (direction === "down" && dy === 0) {
+        dx = 0;
+        dy = gridSize;
+      } else if (direction === "left" && dx === 0) {
+        dx = -gridSize;
+        dy = 0;
+      } else if (direction === "right" && dx === 0) {
+        dx = gridSize;
+        dy = 0;
+      }
+    }
+
+    // 鍵盤方向鍵控制
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "ArrowUp") {
+        changeDirection("up");
+      } else if (event.key === "ArrowDown") {
+        changeDirection("down");
+      } else if (event.key === "ArrowLeft") {
+        changeDirection("left");
+      } else if (event.key === "ArrowRight") {
+        changeDirection("right");
+      }
+    });
+
+    // 一開始先畫畫面
+    updateInfo();
+    drawGame();
+  </script>
+
+</body>
+</html>
